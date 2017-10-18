@@ -1,0 +1,27 @@
+---
+- hosts: localhost
+  vars:
+    aws_key: AWSKEY
+    aws_secret: AWSSECRET
+
+  tasks:
+    - name: Create IAM role for S3 access
+      iam:
+        iam_type: role
+        aws_access_key: "{{ aws_key }}"
+        aws_secret_key: "{{ aws_secret }}"
+        name: S3StoreRole
+        state: present
+        trust_policy_filepath: s3storepolicy.iam
+
+    - name: Launch instance
+      ec2:
+        key_name: mykey
+        aws_access_key: "{{ aws_key }}"
+        aws_secret_key: "{{ aws_secret }}"
+        instance_type: t2.micro
+        image: ami-123456
+        group: s3server
+        count: 1
+        vpc_subnet_id: subnet-12345678
+        instance_profile_name: S3StoreRole
